@@ -134,6 +134,30 @@
       color: #475569;
     }
 
+    .severity {
+      display: inline-block;
+      padding: 0.3rem 0.6rem;
+      border-radius: 5px;
+      font-weight: bold;
+      font-size: 0.85rem;
+      margin-top: 0.5rem;
+    }
+
+    .severity.HIGH {
+      background-color: #ef4444;
+      color: white;
+    }
+
+    .severity.MEDIUM {
+      background-color: #f59e0b;
+      color: white;
+    }
+
+    .severity.LOW {
+      background-color: #10b981;
+      color: white;
+    }
+
     .preloader {
       position: fixed;
       top: 0; left: 0;
@@ -261,10 +285,12 @@
         filtered.forEach(post => {
           const postElement = document.createElement('li');
           postElement.className = 'post';
+          const severityClass = post.severity || 'LOW';
           postElement.innerHTML = `
             <div class="title"><a href="${post.url}" target="_blank">${post.title}</a></div>
             <div class="score">👍 ${post.score}</div>
             <div class="keywords">🧠 Keywords Found: ${post.keywords.join(", ")}</div>
+            <div class="severity ${severityClass}">⚠️ ${severityClass}</div>
           `;
           postsList.appendChild(postElement);
         });
@@ -275,7 +301,14 @@
       fetch('/fetch_posts')
         .then(response => response.json())
         .then(data => {
+          console.log('📊 Fetched posts:', data.posts);
           cachedPosts = data.posts || [];
+          
+          // Debug: Check if severity field exists
+          if (cachedPosts.length > 0) {
+            console.log('🔍 First post severity:', cachedPosts[0].severity);
+          }
+          
           renderPosts(cachedPosts);
           renderCharts(cachedPosts);
           document.getElementById('last-updated').textContent = 'Last updated: ' + new Date().toLocaleTimeString();

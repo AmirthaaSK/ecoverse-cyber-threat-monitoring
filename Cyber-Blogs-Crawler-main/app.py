@@ -37,30 +37,70 @@ keywords = [
     "social engineering", "zero-day", "DNS security", "SSL/TLS"
 ]
 
+# Severity keywords
+HIGH_SEVERITY = [
+    "ransomware", "data breach", "APT", "zero-day", "critical", 
+    "exploit", "RCE", "compromise", "attack", "incident"
+]
+
+MEDIUM_SEVERITY = [
+    "vulnerability", "CVE", "patch", "risk", "malware", "phishing",
+    "threat intelligence", "forensics"
+]
+
+LOW_SEVERITY = [
+    "security", "firewall", "encryption", "authentication", 
+    "compliance", "testing", "forensics", "OSINT"
+]
+
+def detect_severity(title):
+    """Detect severity level (LOW, MEDIUM, HIGH) based on keywords"""
+    title_lower = title.lower()
+    
+    # Check high severity keywords
+    for keyword in HIGH_SEVERITY:
+        if keyword.lower() in title_lower:
+            print(f"✓ HIGH severity detected: '{keyword}' in '{title}'")
+            return "HIGH"
+    
+    # Check medium severity keywords
+    for keyword in MEDIUM_SEVERITY:
+        if keyword.lower() in title_lower:
+            print(f"✓ MEDIUM severity detected: '{keyword}' in '{title}'")
+            return "MEDIUM"
+    
+    # Default to low severity
+    print(f"✓ LOW severity (default) for '{title}'")
+    return "LOW"
+
 @app.route('/')
 def home():
     return render_template('dashboard.html')
 
 @app.route('/fetch_posts')
-
 def fetch_posts():
-    
-
     posts = []
     count = 0
+    print("\n🔄 Fetching posts with severity detection...\n")
+    
     # Increase limit to 50 for more posts
     for idx, submission in enumerate(subreddit.new(limit=1500), start=1):
         title = submission.title.lower()
         found_keywords = [k for k in keywords if k in title]
         if found_keywords:
+            severity = detect_severity(submission.title)
             count += 1
-            posts.append({
+            post_data = {
                 'title': f"{count}. {submission.title}",
                 'url': submission.url,
                 'score': submission.score,
-                'keywords': found_keywords
-            })
-
+                'keywords': found_keywords,
+                'severity': severity
+            }
+            posts.append(post_data)
+            print(f"Post #{count}: {submission.title[:50]}... → {severity}")
+    
+    print(f"\n✅ Total posts found: {count}\n")
     return jsonify({'posts': posts})
 
 if __name__ == "__main__":

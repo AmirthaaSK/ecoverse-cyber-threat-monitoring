@@ -31,6 +31,39 @@ keywords = [
     "red team", "blue team", "DevSecOps", "DLP", "insider threat",
     "social engineering", "zero-day", "DNS security", "SSL/TLS"
 ]
+
+# Severity keywords
+HIGH_SEVERITY = [
+    "ransomware", "data breach", "APT", "zero-day", "critical", 
+    "exploit", "RCE", "compromise", "attack", "incident"
+]
+
+MEDIUM_SEVERITY = [
+    "vulnerability", "CVE", "patch", "risk", "malware", "phishing",
+    "threat intelligence", "forensics"
+]
+
+LOW_SEVERITY = [
+    "security", "firewall", "encryption", "authentication", 
+    "compliance", "testing", "forensics", "OSINT"
+]
+
+def detect_severity(title):
+    """Detect severity level (LOW, MEDIUM, HIGH) based on keywords"""
+    title_lower = title.lower()
+    
+    # Check high severity keywords
+    for keyword in HIGH_SEVERITY:
+        if keyword in title_lower:
+            return "HIGH"
+    
+    # Check medium severity keywords
+    for keyword in MEDIUM_SEVERITY:
+        if keyword in title_lower:
+            return "MEDIUM"
+    
+    # Default to low severity
+    return "LOW"
 seen_posts = set()
 count = 0
 while True:
@@ -45,12 +78,14 @@ while True:
             title = submission.title.lower()
             found_keywords = [k for k in keywords if k in title]
             if found_keywords:
+                severity = detect_severity(submission.title)
                 count += 1
                 print(f"🔍 Post #{count}:")
                 print(f"📌 Title: {submission.title}")
                 print(f"   👍 Score: {submission.score}")
                 print(f"   🔗 URL: {submission.url}")
-                print(f"   🧠 Keywords Found: {', '.join(found_keywords)}\n")
+                print(f"   🧠 Keywords Found: {', '.join(found_keywords)}")
+                print(f"   ⚠️  Severity: {severity}\n")
     
     except ClientException as e:
         print(f"⚠️ ClientException occurred: {e}")
