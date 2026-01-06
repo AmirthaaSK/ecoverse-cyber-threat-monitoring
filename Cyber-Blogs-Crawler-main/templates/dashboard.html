@@ -209,6 +209,42 @@
         <button class="toggle-btn" onclick="toggleDarkMode()">🌙 Toggle Dark</button>
       </div>
     </div>
+
+    <!-- ALERTS SECTION -->
+    <div id="alerts-section" style="display: none; margin-bottom: 2rem;">
+      <div style="background: #fee2e2; border-left: 4px solid #dc2626; padding: 1rem; border-radius: 6px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+          <h2 style="margin: 0; color: #991b1b; font-size: 1.3rem;">🚨 Active Alerts (<span id="alert-count">0</span>)</h2>
+          <button onclick="dismissAllAlerts()" class="toggle-btn" style="background-color: #dc2626;">Dismiss All</button>
+        </div>
+        <div id="alerts-list" style="max-height: 300px; overflow-y: auto;">
+          <!-- Alerts will be populated here -->
+        </div>
+      </div>
+    </div>
+
+    <!-- ALERT STATISTICS -->
+    <div id="alert-stats-section" style="display: none; margin-bottom: 2rem;">
+      <div style="background: #f3f4f6; padding: 1rem; border-radius: 6px; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem;">
+        <div style="background: white; padding: 1rem; border-radius: 5px; text-align: center;">
+          <div style="font-size: 1.5rem; font-weight: bold; color: #dc2626;" id="stats-critical">0</div>
+          <div style="color: #666; font-size: 0.9rem;">CRITICAL</div>
+        </div>
+        <div style="background: white; padding: 1rem; border-radius: 5px; text-align: center;">
+          <div style="font-size: 1.5rem; font-weight: bold; color: #ea580c;" id="stats-high">0</div>
+          <div style="color: #666; font-size: 0.9rem;">HIGH</div>
+        </div>
+        <div style="background: white; padding: 1rem; border-radius: 5px; text-align: center;">
+          <div style="font-size: 1.5rem; font-weight: bold; color: #f59e0b;" id="stats-medium">0</div>
+          <div style="color: #666; font-size: 0.9rem;">MEDIUM</div>
+        </div>
+        <div style="background: white; padding: 1rem; border-radius: 5px; text-align: center;">
+          <div style="font-size: 1.5rem; font-weight: bold; color: #10b981;" id="stats-total">0</div>
+          <div style="color: #666; font-size: 0.9rem;">TOTAL</div>
+        </div>
+      </div>
+    </div>
+
     <div class="last-updated" id="last-updated">Last updated: --</div>
     <ul id="posts-list"></ul>
   </div>
@@ -229,6 +265,110 @@
       const preloader = document.getElementById('preloader');
       if (preloader) preloader.style.display = 'none';
     }
+
+    // ==================== ALERT FUNCTIONS ====================
+
+    function getSeverityColor(severity) {
+      const colors = {
+        'CRITICAL': '#dc2626',
+        'HIGH': '#ea580c',
+        'MEDIUM': '#f59e0b',
+        'LOW': '#10b981'
+      };
+      return colors[severity] || '#6b7280';
+    }
+
+    function renderAlerts(alerts) {
+      const alertsList = document.getElementById('alerts-list');
+      const alertsSection = document.getElementById('alerts-section');
+      const alertStatsSection = document.getElementById('alert-stats-section');
+      
+      if (!alerts || alerts.length === 0) {
+        alertsSection.style.display = 'none';
+        alertStatsSection.style.display = 'none';
+        return;
+      }
+
+      alertsSection.style.display = 'block';
+      alertStatsSection.style.display = 'block';
+      alertsList.innerHTML = '';
+      document.getElementById('alert-count').textContent = alerts.length;
+
+      alerts.forEach(alert => {
+        const alertDiv = document.createElement('div');
+        const severity = alert.severity || 'MEDIUM';
+        const color = getSeverityColor(severity);
+        
+        alertDiv.style.cssText = `
+          background: white;
+          border-left: 4px solid ${color};
+          padding: 0.75rem;
+          margin-bottom: 0.5rem;
+          border-radius: 4px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        `;
+
+        const timeAgo = new Date(alert.timestamp);
+        const timeStr = timeAgo.toLocaleTimeString();
+
+        alertDiv.innerHTML = `
+          <div>
+            <div style="font-weight: bold; color: ${color};">${severity} - ${alert.type.toUpperCase()}</div>
+            <div style="color: #555; font-size: 0.9rem;">${alert.message}</div>
+            <div style="color: #999; font-size: 0.8rem;">${timeStr}</div>
+          </div>
+          <button onclick="dismissAlert(${alert.id})" style="background: #ef4444; color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 4px; cursor: pointer;">✕</button>
+        `;
+
+        alertsList.appendChild(alertDiv);
+      });
+
+      updateAlertStats();
+    }
+
+    function fetchAlerts() {
+      fetch('/api/alerts/active')
+        .then(response => response.json())
+        .then(data => {
+          console.log('🚨 Alerts:', data.alerts);
+          renderAlerts(data.alerts || []);
+        })
+        .catch(err => console.error('Alert fetch error:', err));
+    }
+
+    function dismissAlert(alertId) {
+      fetch(`/api/alerts/${alertId}/dismiss`, { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            console.log(`✅ Alert ${alertId} dismissed`);
+            fetchAlerts();
+          }
+        })
+        .catch(err => console.error('Dismiss error:', err));
+    }
+
+    function dismissAllAlerts() {
+      const alertElements = document.querySelectorAll('#alerts-list button');
+      alertElements.forEach(btn => btn.click());
+    }
+
+    function updateAlertStats() {
+      fetch('/api/alerts/stats')
+        .then(response => response.json())
+        .then(stats => {
+          console.log('📊 Alert Stats:', stats);
+          document.getElementById('stats-critical').textContent = stats.by_severity?.CRITICAL || 0;
+          document.getElementById('stats-high').textContent = stats.by_severity?.HIGH || 0;
+          document.getElementById('stats-medium').textContent = stats.by_severity?.MEDIUM || 0;
+          document.getElementById('stats-total').textContent = stats.total_count || 0;
+        })
+        .catch(err => console.error('Stats fetch error:', err));
+    }
+
+    // ==================== POST FUNCTIONS ====================
 
     function renderCharts(data) {
       const keywordCounts = {}, timeBuckets = {};
@@ -311,6 +451,13 @@
           
           renderPosts(cachedPosts);
           renderCharts(cachedPosts);
+          
+          // Fetch and render alerts
+          if (data.alerts && data.alerts.length > 0) {
+            renderAlerts(data.alerts);
+            console.log('⚠️ New alerts triggered:', data.alerts.length);
+          }
+          
           document.getElementById('last-updated').textContent = 'Last updated: ' + new Date().toLocaleTimeString();
           hidePreloader();
         })
@@ -330,7 +477,14 @@
 
     // Start everything
     fetchPosts();
-    setInterval(fetchPosts, 60000);
+    fetchAlerts();
+    
+    // Refresh data every 60 seconds
+    setInterval(() => {
+      fetchPosts();
+      fetchAlerts();
+    }, 60000);
+    
     setTimeout(hidePreloader, 10000); // hide preloader just in case
 
   </script>

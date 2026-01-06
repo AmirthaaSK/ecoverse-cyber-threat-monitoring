@@ -1,4 +1,4 @@
-from flask import Flask, render_template, jsonify
+from flask import Flask, render_template, jsonify, request
 import praw
 import datetime as dt
 
@@ -6,6 +6,7 @@ app = Flask(__name__)
 
 import os
 from dotenv import load_dotenv
+from alerts import alert_manager
 
 load_dotenv()
 
@@ -101,7 +102,49 @@ def fetch_posts():
             print(f"Post #{count}: {submission.title[:50]}... → {severity}")
     
     print(f"\n✅ Total posts found: {count}\n")
-    return jsonify({'posts': posts})
+    
+    # Check alert thresholds
+    new_alerts = alert_manager.check_thresholds(posts)
+    
+    return jsonify({'posts': posts, 'alerts': new_alerts})
+
+
+# ==================== ALERT ENDPOINTS ====================
+
+@app.route('/api/alerts', methods=['GET'])
+def get_alerts():
+    """Get recent alerts"""
+    limit = request.args.get('limit', 10, type=int)
+    alerts = alert_manager.get_recent_alerts(limit)
+    return jsonify({'alerts': alerts})
+
+
+@app.route('/api/alerts/active', methods=['GET'])
+def get_active_alerts():
+    """Get active alerts only"""
+    active_alerts = alert_manager.get_active_alerts()
+    return jsonify({'alerts': active_alerts, 'count': len(active_alerts)})
+
+
+@app.route('/api/alerts/stats', methods=['GET'])
+def get_alert_stats():
+    """Get alert statistics"""
+    stats = alert_manager.get_alert_statistics()
+    return jsonify(stats)
+
+
+@app.route('/api/alerts/<int:alert_id>/read', methods=['POST'])
+def mark_alert_read(alert_id):
+    """Mark alert as read"""
+    success = alert_manager.mark_alert_as_read(alert_id)
+    return jsonify({'success': success})
+
+
+@app.route('/api/alerts/<int:alert_id>/dismiss', methods=['POST'])
+def dismiss_alert(alert_id):
+    """Dismiss/close alert"""
+    success = alert_manager.dismiss_alert(alert_id)
+    return jsonify({'success': success})
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))  # this line is the key
