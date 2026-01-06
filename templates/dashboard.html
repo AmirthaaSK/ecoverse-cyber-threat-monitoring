@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Cybersecurity Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg-color: #e6f0ff;
+      --text-color: #1e3a8a;
+      --card-bg: #ffffff;
+      --sidebar-bg: linear-gradient(135deg, #1e293b, #475569);
+    }
+    body.dark {
+      --bg-color: #0f172a;
+      --text-color: #f1f5f9;
+      --card-bg: #1e293b;
+      --sidebar-bg: linear-gradient(135deg, #0f172a, #1e293b);
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--bg-color);
+      margin: 0;
+      display: flex;
+      min-height: 100vh;
+      overflow-x: hidden;
+      color: var(--text-color);
+      transition: all 0.3s ease;
+    }
+
+    .sidebar {
+      width: 25%;
+      background: var(--sidebar-bg);
+      padding: 2rem;
+      color: #f8fafc;
+      position: fixed;
+      height: 100%;
+      overflow-y: auto;
+    }
+
+    .sidebar h2, .sidebar h3 {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+      color: #38bdf8;
+      text-align: center;
+    }
+
+    .chart-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+
+    canvas {
+      width: 100% !important;
+      height: auto !important;
+      background: #fff;
+      border-radius: 10px;
+      padding: 1rem;
+      box-sizing: border-box;
+    }
+
+    .main-content {
+      margin-left: 25%;
+      flex: 1;
+      padding: 2rem;
+    }
+
+    .header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .header-bar h1 {
+      font-size: 2rem;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .last-updated {
+      font-style: italic;
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+    }
+
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .search-input {
+      padding: 0.5rem;
+      font-size: 1rem;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+
+    .toggle-btn {
+      padding: 0.4rem 0.7rem;
+      border: none;
+      background-color: #38bdf8;
+      color: #fff;
+      font-weight: bold;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .post {
+      background: var(--card-bg);
+      border-radius: 10px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+    }
+
+    .title a {
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #2563eb;
+      text-decoration: none;
+    }
+
+    .score, .keywords {
+      font-size: 0.9rem;
+      color: #475569;
+    }
+
+    .severity {
+      display: inline-block;
+      padding: 0.3rem 0.6rem;
+      border-radius: 5px;
+      font-weight: bold;
+      font-size: 0.85rem;
+      margin-top: 0.5rem;
+    }
+
+    .severity.HIGH {
+      background-color: #ef4444;
+      color: white;
+    }
+
+    .severity.MEDIUM {
+      background-color: #f59e0b;
+      color: white;
+    }
+
+    .severity.LOW {
+      background-color: #10b981;
+      color: white;
+    }
+
+    .preloader {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: linear-gradient(135deg,#6A1B9A, #1e3a8a, #38bdf8,#FF7043);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      transition: opacity 0.4s ease;
+    }
+
+    .spinner {
+      border: 6px solid #e0f2fe;
+      border-top: 6px solid #1e3a8a;
+      border-radius: 50%;
+      width: 60px; height: 60px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <h2>Analysis Images</h2>
+    <div class="chart-wrapper">
+      <h3>Incident Type Distribution</h3>
+      <canvas id="incidentPieChart"></canvas>
+    </div>
+    <div class="chart-wrapper">
+      <h3>Incidents Over Time</h3>
+      <canvas id="incidentBarChart"></canvas>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <div class="header-bar">
+      <h1>📊 Cybersecurity Incident Feed</h1>
+      <div class="controls">
+        <input class="search-input" type="text" id="search" placeholder="Search incidents...">
+        <button class="toggle-btn" onclick="toggleDarkMode()">🌙 Toggle Dark</button>
+      </div>
+    </div>
+
+    <!-- ALERTS SECTION -->
+    <div id="alerts-section" style="display: none; margin-bottom: 2rem;">
+      <div style="background: #fee2e2; border-left: 4px solid #dc2626; padding: 1rem; border-radius: 6px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+          <h2 style="margin: 0; color: #991b1b; font-size: 1.3rem;">🚨 Active Alerts (<span id="alert-count">0</span>)</h2>
+          <button onclick="dismissAllAlerts()" class="toggle-btn" style="background-color: #dc2626;">Dismiss All</button>
+        </div>
+        <div id="alerts-list" style="max-height: 300px; overflow-y: auto;">
+          <!-- Alerts will be populated here -->
+        </div>
+      </div>
+    </div>
+
+    <!-- ALERT STATISTICS -->
+    <div id="alert-stats-section" style="display: none; margin-bottom: 2rem;">
+      <div style="background: #f3f4f6; padding: 1rem; border-radius: 6px; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem;">
+        <div style="background: white; padding: 1rem; border-radius: 5px; text-align: center;">
+          <div style="font-size: 1.5rem; font-weight: bold; color: #dc2626;" id="stats-critical">0</div>
+          <div style="color: #666; font-size: 0.9rem;">CRITICAL</div>
+        </div>
+        <div style="background: white; padding: 1rem; border-radius: 5px; text-align: center;">
+          <div style="font-size: 1.5rem; font-weight: bold; color: #ea580c;" id="stats-high">0</div>
+          <div style="color: #666; font-size: 0.9rem;">HIGH</div>
+        </div>
+        <div style="background: white; padding: 1rem; border-radius: 5px; text-align: center;">
+          <div style="font-size: 1.5rem; font-weight: bold; color: #f59e0b;" id="stats-medium">0</div>
+          <div style="color: #666; font-size: 0.9rem;">MEDIUM</div>
+        </div>
+        <div style="background: white; padding: 1rem; border-radius: 5px; text-align: center;">
+          <div style="font-size: 1.5rem; font-weight: bold; color: #10b981;" id="stats-total">0</div>
+          <div style="color: #666; font-size: 0.9rem;">TOTAL</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="last-updated" id="last-updated">Last updated: --</div>
+    <ul id="posts-list"></ul>
+  </div>
+
+  <!-- Preloader -->
+  <div class="preloader" id="preloader">
+    <div class="spinner"></div>
+    <p>"Securing the Future... 🔒"</p>
+    <p style="font-family: 'Roboto', sans-serif; font-size: 1.5rem; font-weight: 700; color: #000; text-align: center; text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3); line-height: 1.6;">
+      "In the digital world, the first line of defense is knowledge, <br> the second is vigilance, and the third is security."
+    </p>
+  </div>
+
+  <script>
+    let pieChart, barChart, cachedPosts = [];
+
+    function hidePreloader() {
+      const preloader = document.getElementById('preloader');
+      if (preloader) preloader.style.display = 'none';
+    }
+
+    // ==================== ALERT FUNCTIONS ====================
+
+    function getSeverityColor(severity) {
+      const colors = {
+        'CRITICAL': '#dc2626',
+        'HIGH': '#ea580c',
+        'MEDIUM': '#f59e0b',
+        'LOW': '#10b981'
+      };
+      return colors[severity] || '#6b7280';
+    }
+
+    function renderAlerts(alerts) {
+      const alertsList = document.getElementById('alerts-list');
+      const alertsSection = document.getElementById('alerts-section');
+      const alertStatsSection = document.getElementById('alert-stats-section');
+      
+      if (!alerts || alerts.length === 0) {
+        alertsSection.style.display = 'none';
+        alertStatsSection.style.display = 'none';
+        return;
+      }
+
+      alertsSection.style.display = 'block';
+      alertStatsSection.style.display = 'block';
+      alertsList.innerHTML = '';
+      document.getElementById('alert-count').textContent = alerts.length;
+
+      alerts.forEach(alert => {
+        const alertDiv = document.createElement('div');
+        const severity = alert.severity || 'MEDIUM';
+        const color = getSeverityColor(severity);
+        
+        alertDiv.style.cssText = `
+          background: white;
+          border-left: 4px solid ${color};
+          padding: 0.75rem;
+          margin-bottom: 0.5rem;
+          border-radius: 4px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        `;
+
+        const timeAgo = new Date(alert.timestamp);
+        const timeStr = timeAgo.toLocaleTimeString();
+
+        alertDiv.innerHTML = `
+          <div>
+            <div style="font-weight: bold; color: ${color};">${severity} - ${alert.type.toUpperCase()}</div>
+            <div style="color: #555; font-size: 0.9rem;">${alert.message}</div>
+            <div style="color: #999; font-size: 0.8rem;">${timeStr}</div>
+          </div>
+          <button onclick="dismissAlert(${alert.id})" style="background: #ef4444; color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 4px; cursor: pointer;">✕</button>
+        `;
+
+        alertsList.appendChild(alertDiv);
+      });
+
+      updateAlertStats();
+    }
+
+    function fetchAlerts() {
+      fetch('/api/alerts/active')
+        .then(response => response.json())
+        .then(data => {
+          console.log('🚨 Alerts:', data.alerts);
+          renderAlerts(data.alerts || []);
+        })
+        .catch(err => console.error('Alert fetch error:', err));
+    }
+
+    function dismissAlert(alertId) {
+      fetch(`/api/alerts/${alertId}/dismiss`, { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            console.log(`✅ Alert ${alertId} dismissed`);
+            fetchAlerts();
+          }
+        })
+        .catch(err => console.error('Dismiss error:', err));
+    }
+
+    function dismissAllAlerts() {
+      const alertElements = document.querySelectorAll('#alerts-list button');
+      alertElements.forEach(btn => btn.click());
+    }
+
+    function updateAlertStats() {
+      fetch('/api/alerts/stats')
+        .then(response => response.json())
+        .then(stats => {
+          console.log('📊 Alert Stats:', stats);
+          document.getElementById('stats-critical').textContent = stats.by_severity?.CRITICAL || 0;
+          document.getElementById('stats-high').textContent = stats.by_severity?.HIGH || 0;
+          document.getElementById('stats-medium').textContent = stats.by_severity?.MEDIUM || 0;
+          document.getElementById('stats-total').textContent = stats.total_count || 0;
+        })
+        .catch(err => console.error('Stats fetch error:', err));
+    }
+
+    // ==================== POST FUNCTIONS ====================
+
+    function renderCharts(data) {
+      const keywordCounts = {}, timeBuckets = {};
+      data.forEach(post => {
+        (post.keywords || []).forEach(k => keywordCounts[k] = (keywordCounts[k] || 0) + 1);
+        const hour = new Date(post.timestamp || Date.now()).getHours();
+        timeBuckets[hour] = (timeBuckets[hour] || 0) + 1;
+      });
+
+      const keywords = Object.keys(keywordCounts);
+      const keywordData = Object.values(keywordCounts);
+      const hours = Array.from({ length: 24 }, (_, i) => i);
+      const timeData = hours.map(h => timeBuckets[h] || 0);
+
+      if (pieChart) pieChart.destroy();
+      pieChart = new Chart(document.getElementById('incidentPieChart'), {
+        type: 'pie',
+        data: {
+          labels: keywords,
+          datasets: [{ data: keywordData, backgroundColor: ['#f87171', '#60a5fa', '#fbbf24', '#34d399', '#a78bfa'] }]
+        }
+      });
+
+      if (barChart) barChart.destroy();
+      barChart = new Chart(document.getElementById('incidentBarChart'), {
+        type: 'bar',
+        data: {
+          labels: hours.map(h => `${h}:00`),
+          datasets: [{
+            label: 'Incidents per Hour',
+            data: timeData,
+            backgroundColor: '#2563eb'
+          }]
+        },
+        options: {
+          scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+        }
+      });
+    }
+
+    function renderPosts(posts) {
+      const searchTerm = document.getElementById('search').value.toLowerCase();
+      const postsList = document.getElementById('posts-list');
+      postsList.innerHTML = '';
+
+      const filtered = posts.filter(post =>
+        post.title.toLowerCase().includes(searchTerm) ||
+        post.keywords.join(',').toLowerCase().includes(searchTerm)
+      );
+
+      if (filtered.length === 0) {
+        postsList.innerHTML = '<p>No matching incidents found.</p>';
+      } else {
+        filtered.forEach(post => {
+          const postElement = document.createElement('li');
+          postElement.className = 'post';
+          const severityClass = post.severity || 'LOW';
+          postElement.innerHTML = `
+            <div class="title"><a href="${post.url}" target="_blank">${post.title}</a></div>
+            <div class="score">👍 ${post.score}</div>
+            <div class="keywords">🧠 Keywords Found: ${post.keywords.join(", ")}</div>
+            <div class="severity ${severityClass}">⚠️ ${severityClass}</div>
+          `;
+          postsList.appendChild(postElement);
+        });
+      }
+    }
+
+    function fetchPosts() {
+      fetch('/fetch_posts')
+        .then(response => response.json())
+        .then(data => {
+          console.log('📊 Fetched posts:', data.posts);
+          cachedPosts = data.posts || [];
+          
+          // Debug: Check if severity field exists
+          if (cachedPosts.length > 0) {
+            console.log('🔍 First post severity:', cachedPosts[0].severity);
+          }
+          
+          renderPosts(cachedPosts);
+          renderCharts(cachedPosts);
+          
+          // Fetch and render alerts
+          if (data.alerts && data.alerts.length > 0) {
+            renderAlerts(data.alerts);
+            console.log('⚠️ New alerts triggered:', data.alerts.length);
+          }
+          
+          document.getElementById('last-updated').textContent = 'Last updated: ' + new Date().toLocaleTimeString();
+          hidePreloader();
+        })
+        .catch(err => {
+          console.error('Fetch error:', err);
+          hidePreloader();
+        });
+    }
+
+    document.getElementById('search').addEventListener('input', () => {
+      renderPosts(cachedPosts);
+    });
+
+    function toggleDarkMode() {
+      document.body.classList.toggle('dark');
+    }
+
+    // Start everything
+    fetchPosts();
+    fetchAlerts();
+    
+    // Refresh data every 60 seconds
+    setInterval(() => {
+      fetchPosts();
+      fetchAlerts();
+    }, 60000);
+    
+    setTimeout(hidePreloader, 10000); // hide preloader just in case
+
+  </script>
+</body>
+</html>
