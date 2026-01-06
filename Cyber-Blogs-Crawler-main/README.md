@@ -7,24 +7,52 @@ A real-time web dashboard that visualizes cybersecurity incidents with live char
 ## To  View Live
 https://cyber-blogs-crawler.onrender.com/
 
-## 🔥 Features
+## 🔥 🚀 Features
 
-- 📊 **Live Charts**: Visualize incident types and frequency over time using `Chart.js`.
-- 🔍 **Search Functionality**: Filter incidents based on keywords or titles.
-- 🌙 **Dark Mode**: Toggle between light and dark themes.
-- 🔄 **Auto Refresh**: Automatically fetches new incident data every 60 seconds.
-- ⏳ **Preloader**: Smooth animated spinner and message during data load.
-- 📅 **Last Updated Time**: Shows the most recent fetch timestamp.
-- ✅ Responsive and accessible design.
+📊 Live Charts: Visualize incident types and frequency over time using Chart.js.
 
+🔍 Search Functionality: Filter incidents based on keywords or titles.
+
+🌙 Dark Mode: Toggle between light and dark themes for better usability.
+
+🔄 Auto Refresh: Automatically fetches new incident data every 60 seconds.
+
+⏳ Preloader: Smooth animated spinner with loading message during data fetch.
+
+📅 Last Updated Time: Displays the most recent data fetch timestamp.
+
+📱 Responsive Design: Works seamlessly across desktop and mobile devices.
+
+♿ Accessible UI: Clear color contrast and readable layouts.
+
+🔔 Alert System 
+Automatically triggers alerts when incident counts cross predefined thresholds.
+Supports multiple alert categories (General, Malware, Ransomware, Data Breach).
+Alerts are color-coded and can be dismissed individually or all at once.
+
+🚦 Severity Level Classification 
+
+Each incident is classified as LOW, MEDIUM, HIGH, or CRITICAL.
+Severity is assigned based on keyword type and incident impact.
+Enables quick prioritization of critical threats by analysts.
 ---
 
-## 🚀 Tech Stack
+## 🚀  Frontend
 
-- **HTML5**
-- **CSS3** with CSS Variables
-- **JavaScript (ES6+)**
-- [**Chart.js**](https://www.chartjs.org/) for live data visualization
+HTML5 – Structure and layout of the dashboard
+CSS3 – Responsive styling with CSS Variables for theming
+JavaScript (ES6+) – Dynamic UI updates and data handling
+Chart.js – Live visualization of incident types and trends
+
+⚙️ Backend
+
+Python – Core logic for data processing and rule-based detection
+Flask – Lightweight web framework to serve APIs and dashboard data
+
+🧠 Intelligence & Logic
+
+Rule-Based Engine – Keyword detection, incident classification, severity assignment, and alert triggering
+Threshold-Based Alerting – Generates alerts when incident counts exceed safe limits
 
 ---
 

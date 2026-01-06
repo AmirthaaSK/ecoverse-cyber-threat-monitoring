@@ -383,5 +383,159 @@
     "threshold": 5,
     "status": "active",
     "read": false
+  },
+  {
+    "id": 36,
+    "timestamp": "2026-01-06T09:25:21.649680",
+    "severity": "MEDIUM",
+    "type": "vulnerability",
+    "message": "\ud83d\udea8 ALERT: 18 VULNERABILITY incidents detected (Threshold: 15)",
+    "count": 18,
+    "threshold": 15,
+    "status": "active",
+    "read": false
+  },
+  {
+    "id": 37,
+    "timestamp": "2026-01-06T09:25:21.649680",
+    "severity": "HIGH",
+    "type": "general",
+    "message": "\ud83d\udea8 ALERT: 154 GENERAL incidents detected (Threshold: 20)",
+    "count": 154,
+    "threshold": 20,
+    "status": "active",
+    "read": false
+  },
+  {
+    "id": 38,
+    "timestamp": "2026-01-06T09:25:21.649680",
+    "severity": "CRITICAL",
+    "type": "malware",
+    "message": "\ud83d\udea8 ALERT: 24 MALWARE incidents detected (Threshold: 10)",
+    "count": 24,
+    "threshold": 10,
+    "status": "active",
+    "read": false
+  },
+  {
+    "id": 39,
+    "timestamp": "2026-01-06T09:25:21.649680",
+    "severity": "CRITICAL",
+    "type": "ransomware",
+    "message": "\ud83d\udea8 ALERT: 13 RANSOMWARE incidents detected (Threshold: 8)",
+    "count": 13,
+    "threshold": 8,
+    "status": "active",
+    "read": false
+  },
+  {
+    "id": 40,
+    "timestamp": "2026-01-06T09:25:21.649680",
+    "severity": "CRITICAL",
+    "type": "data_breach",
+    "message": "\ud83d\udea8 ALERT: 10 DATA_BREACH incidents detected (Threshold: 7)",
+    "count": 10,
+    "threshold": 7,
+    "status": "active",
+    "read": false
+  },
+  {
+    "id": 41,
+    "timestamp": "2026-01-06T09:25:21.649680",
+    "severity": "HIGH",
+    "type": "exploit",
+    "message": "\ud83d\udea8 ALERT: 15 EXPLOIT incidents detected (Threshold: 6)",
+    "count": 15,
+    "threshold": 6,
+    "status": "active",
+    "read": false
+  },
+  {
+    "id": 42,
+    "timestamp": "2026-01-06T09:25:21.649680",
+    "severity": "MEDIUM",
+    "type": "phishing",
+    "message": "\ud83d\udea8 ALERT: 9 PHISHING incidents detected (Threshold: 5)",
+    "count": 9,
+    "threshold": 5,
+    "status": "active",
+    "read": false
+  },
+  {
+    "id": 43,
+    "timestamp": "2026-01-06T09:25:44.006758",
+    "severity": "MEDIUM",
+    "type": "vulnerability",
+    "message": "\ud83d\udea8 ALERT: 18 VULNERABILITY incidents detected (Threshold: 15)",
+    "count": 18,
+    "threshold": 15,
+    "status": "active",
+    "read": false
+  },
+  {
+    "id": 44,
+    "timestamp": "2026-01-06T09:25:44.006758",
+    "severity": "HIGH",
+    "type": "general",
+    "message": "\ud83d\udea8 ALERT: 154 GENERAL incidents detected (Threshold: 20)",
+    "count": 154,
+    "threshold": 20,
+    "status": "active",
+    "read": false
+  },
+  {
+    "id": 45,
+    "timestamp": "2026-01-06T09:25:44.006758",
+    "severity": "CRITICAL",
+    "type": "malware",
+    "message": "\ud83d\udea8 ALERT: 24 MALWARE incidents detected (Threshold: 10)",
+    "count": 24,
+    "threshold": 10,
+    "status": "active",
+    "read": false
+  },
+  {
+    "id": 46,
+    "timestamp": "2026-01-06T09:25:44.006758",
+    "severity": "CRITICAL",
+    "type": "ransomware",
+    "message": "\ud83d\udea8 ALERT: 13 RANSOMWARE incidents detected (Threshold: 8)",
+    "count": 13,
+    "threshold": 8,
+    "status": "active",
+    "read": false
+  },
+  {
+    "id": 47,
+    "timestamp": "2026-01-06T09:25:44.006758",
+    "severity": "CRITICAL",
+    "type": "data_breach",
+    "message": "\ud83d\udea8 ALERT: 10 DATA_BREACH incidents detected (Threshold: 7)",
+    "count": 10,
+    "threshold": 7,
+    "status": "active",
+    "read": false
+  },
+  {
+    "id": 48,
+    "timestamp": "2026-01-06T09:25:44.006758",
+    "severity": "HIGH",
+    "type": "exploit",
+    "message": "\ud83d\udea8 ALERT: 15 EXPLOIT incidents detected (Threshold: 6)",
+    "count": 15,
+    "threshold": 6,
+    "status": "active",
+    "read": false
+  },
+  {
+    "id": 49,
+    "timestamp": "2026-01-06T09:25:44.006758",
+    "severity": "MEDIUM",
+    "type": "phishing",
+    "message": "\ud83d\udea8 ALERT: 9 PHISHING incidents detected (Threshold: 5)",
+    "count": 9,
+    "threshold": 5,
+    "status": "active",
+    "read": false
   }
 ]
